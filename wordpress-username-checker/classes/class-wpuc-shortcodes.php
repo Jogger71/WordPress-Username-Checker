@@ -21,5 +21,8 @@ if ( ! class_exists( 'WPUC_Shortcodes' ) ) {
 		/**
 		 * Front user check short code function
 		 */
+		public function front_end_shortcode( $atts ) {
+
+		}
 	}
 }
