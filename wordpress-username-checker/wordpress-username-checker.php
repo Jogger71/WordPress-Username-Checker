@@ -7,7 +7,7 @@
  *
  * Description: This very lightweight plugin allows front end users to check if their email has been registered on your site or not
  *
- * Version: 0.0.0
+ * Version: 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
