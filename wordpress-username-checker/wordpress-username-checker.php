@@ -25,6 +25,14 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 		private static $instance;
 
 		/**
+		 * Instance of the shortcodes class
+		 *
+		 * @var WPUC_Shortcodes $shortcodes
+		 * @since 1.0.0
+		 */
+		public $shortcodes;
+
+		/**
 		 * The variable that will store the shortcode class
 		 *
 		 * @var
@@ -34,6 +42,8 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 		 * Class constructor
 		 */
 		private function __construct() {
+
+
 
 		}
 
@@ -46,6 +56,19 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 		public static function get_instance() {
 			if ( ! isset( self::$instance ) && ! ( self::$instance instanceof WP_Username_Checker ) ) {
 				self::$instance = new WP_Username_Checker();
+
+				//  Some initialisations
+				self::$instance->define_constants();
+				self::$instance->include_files();
+				self::$instance->create_objects();
+
+				//  Add all the required actions
+				add_action( 'wp_enqueue_scripts', array( self::$instance, 'jquery_enqueue' ) );
+				add_action( 'wp_enqueue_scripts', array( self::$instance, 'setup_script' ) );
+				add_action( 'wp_enqueue_scripts', array( self::$instance, 'enqueue_scripts' ) );
+				add_action( 'wp_ajax_username_check', array( self::$instance, 'username_ajax_confirmation' ) );
+				add_action( 'wp_ajax_nopriv_username_check', array( self::$instance, 'username_ajax_confirmation' ) );
+				add_shortcode( 'wpuc_email_check', array( self::$instance->shortcodes, 'front_end_shortcode' ) );
 			}
 
 			return self::$instance;
@@ -64,6 +87,45 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 			if ( ! defined( 'WPUC_PATH' ) ) {
 				define( 'WPUC_PATH', plugins_url( '', __FILE__ ) );
 			}
+
+			if ( ! defined( 'WPUC_ASSETS_PATH' ) ) {
+				define( 'WPUC_ASSETS_PATH', WPUC_PATH . '/assets' );
+			}
+		}
+
+		/**
+		 * Includes all the required files
+		 *
+		 * @since 1.0.0
+		 */
+		public function include_files() {
+			include_once( WPUC_DIR . '/classes/class-wpuc-shortcodes.php' );
+		}
+
+		/**
+		 * Create the required objects
+		 *
+		 * @since 0.1.0
+		 */
+		public function create_objects() {
+			$this->shortcodes = new WPUC_Shortcodes();
+		}
+
+		/**
+		 * jQuery setup function
+		 *
+		 * @since 1.0.0
+		 */
+		public function jquery_enqueue() {
+			$jq_enq = wp_script_is('jquery', 'enqueued');
+
+			if ( ! $jq_enq ) {
+				wp_enqueue_script( 'jquery' );
+			}
+
+			if ( ! $jq_enq ) {
+				wp_enqueue_script( 'jquery_wpuc', WPUC_ASSETS_PATH . '/jquery-1.11.3.min.js' );
+			}
 		}
 
 		/**
@@ -72,7 +134,15 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 		 * @since 1.0.0
 		 */
 		public function enqueue_scripts() {
+			$jq_enq = wp_script_is('jquery', 'enqueued');
+			$wpuc_jq_enq = wp_script_is( 'jquery_wpuc', 'enqueued' );
+			$wpuc_enq = wp_script_is( 'wpuc_script', 'enqueued' );
 
+			if ( ! $wpuc_enq && $jq_enq ) {
+				wp_enqueue_script( 'wpuc_script', WPUC_ASSETS_PATH . '/scripts.js', array( 'jquery' ) );
+			} else if ( ! $wpuc_enq && $wpuc_jq_enq ) {
+				wp_enqueue_script( 'wpuc_script', WPUC_ASSETS_PATH . '/scripts.js', array( 'jquery_wpuc' ) );
+			}
 		}
 
 		/**
@@ -81,7 +151,34 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 		 * @since 1.0.0
 		 */
 		public function setup_script() {
-			echo '<script type="text/javascript">var adminSetup = ' . admin_url( 'admin-ajax.php' ) . '; </script>';
+			echo '<script type="text/javascript">var wpuc_js ={ adminURL: "' . admin_url( 'admin-ajax.php' ) . '" }; </script>';
+		}
+
+		/**
+		 * Checks that the username does exist through an AJAX call
+		 *
+		 * @since 1.0.0
+		 */
+		public function username_ajax_confirmation() {
+			include_once( WPUC_DIR . '/classes/class-notifications.php' );
+
+			$email = $_POST[ 'email' ];
+			$available = 'You do not have an account on our system, you may create one.';
+			$unavailable = 'It seems that you do have an account on our system. If you do not know what your password is, please reset it.';
+
+			if ( email_exists( $email ) ) {
+				echo Notifications::success( $unavailable );
+			} else {
+				echo Notifications::danger( $available );
+			}
+
+			wp_die();
 		}
 	}
 }
+
+function wpuc() {
+	return WP_Username_Checker::get_instance();
+}
+
+wpuc();
