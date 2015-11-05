@@ -19,17 +19,31 @@ if ( ! class_exists( 'WPUC_Shortcodes' ) ) {
 		}
 
 		/**
-		 * Front user check short code function
+		 * Front end user email check short code function
+		 * @since 1.0.0
 		 */
-		public function front_end_shortcode( $atts ) {
-			$string = '';
-			$string .= sprintf(
-				'<div class="wpuc_alert"><div class="notification information">%s</div></div>',
-				'Enter your email address below to see whether it is registered with us or not.'
-			);
-			$string .= sprintf( '<input type="text" id="username_email" name="username_email" placeholder="%s" />', 'Enter your email here...' );
-			$string .= sprintf( '<input type="submit" id="wpuc_check_user" name="wpuc_check_user" value="%s" />', 'Check Email' );
-			return $string;
+		public function email_check_front_end_shortcode( $atts ) {
+			return include WPUC_DIR . "/templates/email_check_form.php";
+		}
+
+		/**
+		 * Front end user username check short code function
+		 *
+		 * @since 1.1.0
+		 */
+		public function username_check_front_end_shortcode($atts)
+		{
+
+		}
+
+		/**
+		 * Front end username or email check form shortcode function
+		 *
+		 * @since 1.1.0
+		 */
+		public function user_availability_front_end_shortcode($atts)
+		{
+
 		}
 	}
 }
