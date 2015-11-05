@@ -7,7 +7,7 @@
  *
  * Description: This very lightweight plugin allows front end users to check if their email has been registered on your site or not
  *
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -164,7 +164,7 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 
 			$email = $_POST[ 'email' ];
 			$available = 'You do not have an account on our system, you may create one.';
-			$unavailable = 'It seems that you do have an account on our system. If you do not know what your password is, please reset it.';
+			$unavailable = sprintf( 'It seems that you do have an account on our system. If you do not know what your password is, <a href="%1$s">please reset it.</a>', '/my-account/lost-password/' );
 
 			if ( email_exists( $email ) ) {
 				echo Notifications::success( $unavailable );
