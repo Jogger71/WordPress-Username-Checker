@@ -164,7 +164,7 @@ if ( ! class_exists( 'WP_Username_Checker' ) ) {
 
 			$email = $_POST[ 'email' ];
 			$available = 'You do not have an account on our system, you may create one.';
-			$unavailable = sprintf( 'It seems that you do have an account on our system. If you do not know what your password is, <a href="%1$s">please reset it.</a>', '/my-account/lost-password/' );
+			$unavailable = sprintf( 'It seems that you do have an account on our system. If you do not know what your password is, <a href="%1$s" target="%2$s">please reset it.</a>', '/my-account/lost-password/', '_blank' );
 
 			if ( email_exists( $email ) ) {
 				echo Notifications::success( $unavailable );
